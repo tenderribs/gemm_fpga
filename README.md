@@ -1,4 +1,4 @@
-# FPGA Fun
+# LLAMA2 on FPGA
 
 Installation
 
@@ -7,7 +7,7 @@ Installation
 - Digilent Genesys 2 FPGA
 
 ```sh
-git clone git@github.com:tenderribs/fpga_fun.git
-cd fpga_fun
+git clone git@github.com:tenderribs/llama2_fpga.git
+cd llama2_fpga
 git submodule update --init
 ```

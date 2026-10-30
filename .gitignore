@@ -65,5 +65,8 @@ xvlog.*
 *.dcp
 ## standalone simulation output
 sim/build/
+## scripted build output
+/build/
 
 .vscode
+CLAUDE*.md
