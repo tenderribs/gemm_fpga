@@ -1,0 +1,6 @@
+[submodule "board_support/vivado-boards"]
+	path = board_support/vivado-boards
+	url = git@github.com:Digilent/vivado-boards.git
+[submodule "board_support/digilent-xdc"]
+	path = board_support/digilent-xdc
+	url = git@github.com:Digilent/digilent-xdc.git
