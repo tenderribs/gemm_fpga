@@ -70,3 +70,4 @@ sim/build/
 
 .vscode
 CLAUDE*.md
+.venv
