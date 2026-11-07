@@ -1,16 +1,18 @@
 `default_nettype none
 
 module top (
-    input wire logic sysclk_p,
-    input wire logic sysclk_n
+    input wire logic SysClk_C,
+    input wire logic SysClk_NC,
+    input wire logic Rst_NI
 );
-  localparam int SysClkF  = 200e6;   // 10 ms at 200 MHz
+  localparam int SysClkF = 200e6;  // 10 ms at 200 MHz
 
-  logic clk;
+  logic Clk_C;
+
   IBUFDS u_clk_buf (
-      .I (sysclk_p),
-      .IB(sysclk_n),
-      .O (clk)
+      .I (SysClk_C),
+      .IB(SysClk_NC),
+      .O (Clk_C)
   );
 
 endmodule
