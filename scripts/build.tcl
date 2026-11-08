@@ -8,7 +8,7 @@
 #   vivado -mode batch -nojournal -log build/synth.log -source scripts/build.tcl -tclargs synth
 
 set repo_root [file normalize [file dirname [info script]]/..]
-set srcs_dir  $repo_root/genesys2.srcs
+set srcs_dir  $repo_root/src
 set out_dir   $repo_root/build
 set top       top
 set part      xc7k325tffg900-2

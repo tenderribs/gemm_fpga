@@ -6,8 +6,8 @@
 
 VIVADO ?= vivado
 
-SRCS := $(wildcard genesys2.srcs/sources/*.sv)
-XDC  := $(wildcard genesys2.srcs/constrs/*.xdc)
+SRCS := $(wildcard src/sources/*.sv)
+XDC  := $(wildcard src/constrs/*.xdc)
 
 run = $(VIVADO) -mode batch -nojournal -log build/$(1).log -source scripts/build.tcl -tclargs $(1)
 

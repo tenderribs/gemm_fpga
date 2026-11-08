@@ -9,8 +9,8 @@ BUILD="$REPO/sim/build/verilator"
 
 SOURCES=("$REPO/sim/IBUFDS.v")
 while IFS= read -r f; do SOURCES+=("$f"); done \
-  < <(find "$REPO/genesys2.srcs/sources" -name '*.sv' | sort)
-SOURCES+=("$REPO/genesys2.srcs/sim/tb_top.sv")
+  < <(find "$REPO/src/sources" -name '*.sv' | sort)
+SOURCES+=("$REPO/src/sim/tb_top.sv")
 
 if (($#)); then SIZES=("$@"); else SIZES=(2 4 128); fi
 MODES=(iden rand)
