@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Build and run the example with Verilator (5.x, needs --timing for the TB's
 # delays and @(posedge) waits).
-# Usage: sim/run_verilator.sh [N ...]   (default: 2 4 128)
+# Usage: [VERBOSE=1] sim/run_verilator.sh [N ...]   (default: 2)
+# Logs per run: sim/build/verilator/N<N>_<mode>/{build,sim}.log
 set -euo pipefail
 
 REPO=$(cd "$(dirname "$0")/.." && pwd)
@@ -9,13 +10,20 @@ BUILD="$REPO/sim/build/verilator"
 
 SOURCES=("$REPO/sim/IBUFDS.v")
 while IFS= read -r f; do SOURCES+=("$f"); done \
-  < <(find "$REPO/genesys2.srcs/sources" -name '*.sv' | sort)
-SOURCES+=("$REPO/genesys2.srcs/sim/tb_top.sv")
+  < <(find "$REPO/src/sources" -name '*.sv' | sort)
+SOURCES+=("$REPO/src/sim/tb_systolic_array.sv")
 
-if (($#)); then SIZES=("$@"); else SIZES=(2 4 128); fi
+if (($#)); then SIZES=("$@"); else SIZES=(2); fi
 MODES=(iden rand)
 
 python3 "$REPO/sim/gen_stim.py" --sizes "${SIZES[@]}"
+
+# Print the first line of every Verilator diagnostic in a log (one line per
+# warning/error, with file:line), repo paths shortened. Full context stays in
+# the log.
+show_diags() {
+  grep -E '^%(Warning|Error)' "$1" | sed "s|$REPO/||g" || true
+}
 
 status=0
 for N in "${SIZES[@]}"; do
@@ -26,7 +34,8 @@ for N in "${SIZES[@]}"; do
     rm -rf "$OUT"
     mkdir -p "$OUT"
 
-    verilator --binary --timing -Wall -Wno-fatal -Wno-TIMESCALEMOD \
+    verilator --binary --timing -Wno-fatal -Wall -Wno-TIMESCALEMOD \
+      --trace-fst -CFLAGS "-I$(brew --prefix)/include" -LDFLAGS "-L$(brew --prefix)/lib" \
       --x-assign unique --x-initial unique \
       -Mdir "$OUT" \
       -GN="$N" \
@@ -34,12 +43,26 @@ for N in "${SIZES[@]}"; do
       -GBFile="\"$VEC/B_${MODE}_$N.hex\"" \
       -GCFile="\"$VEC/C_${MODE}_$N.hex\"" \
       -GYFile="\"$VEC/Y_${MODE}_$N.hex\"" \
-      --top-module tb_top "${SOURCES[@]}" > "$OUT/build.log" 2>&1 \
-      || { echo "BUILD FAILED (see $OUT/build.log)"; grep '%Error' "$OUT/build.log"; status=1; continue; }
+      -GFstPath="\"$OUT/out.fst\"" \
+      --top-module tb_systolic_array "${SOURCES[@]}" > "$OUT/build.log" 2>&1 \
+      || {
+        show_diags "$OUT/build.log"
+        echo "BUILD FAILED (full log: ${OUT#"$REPO"/}/build.log)"
+        status=1
+        continue
+      }
+    show_diags "$OUT/build.log"
 
-    out=$("$OUT/Vtb_top" +verilator+seed+$RANDOM +verilator+rand+reset+2 2>&1 || true)
-    echo "$out" | grep -E '^(TEST|MISMATCH|FAIL|TIMEOUT)|%Error' || true
-    echo "$out" | grep -q 'TEST PASSED' || status=1
+    # Full sim output (including $display debug prints) goes to sim.log;
+    # set VERBOSE=1 to also echo all of it here.
+    "$OUT/Vtb_systolic_array" +verilator+seed+$RANDOM +verilator+rand+reset+2 \
+      > "$OUT/sim.log" 2>&1 || true
+    if [[ ${VERBOSE:-0} == 1 ]]; then
+      cat "$OUT/sim.log"
+    else
+      grep -E '^(TEST|MISMATCH|FAIL|TIMEOUT)|%Error' "$OUT/sim.log" || true
+    fi
+    grep -q 'TEST PASSED' "$OUT/sim.log" || status=1
   done
 done
 
