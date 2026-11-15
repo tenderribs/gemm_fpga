@@ -4,8 +4,8 @@ module delay_line #(
 ) (
     input wire logic clk_i,
 
-    input wire logic [BitWidth-1:0] val_i,
-    output logic [BitWidth-1:0] val_o
+    input wire logic signed [BitWidth-1:0] val_i,
+    output logic signed [BitWidth-1:0] val_o
 );
 
   if (Depth == 0) begin : gen_depth_eq_0
