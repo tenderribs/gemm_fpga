@@ -3,6 +3,14 @@
 Computes `Y = A @ B + C` on a Digilent Genesys 2 board (Kintex-7 `xc7k325tffg900-2`).
 `A`, `B` and `C` are N×N signed 8-bit matrices, and `Y` is N×N signed 32-bit.
 
+## Architecture
+
+The core is a weight-stationary systolic array of N×N processing elements (PEs). `B` is loaded into the PEs first and stays there. Then `A` flows in from the left and partial sums flow down from the top, starting at `C`. Rows of `Y` come out at the bottom, one per cycle.
+
+Example array for N = 2:
+
+![Systolic array, N = 2](docs/systolic_array.drawio.svg)
+
 ## Required software
 
 | Tool                             | Version                          | Used for                             |
